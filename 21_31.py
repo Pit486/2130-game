@@ -12,7 +12,7 @@ nominal = ['2','3','4','5','6','7','8','9','10','v','d','k','t']
 mast = ['p','k','b','c']
 
 
-
+out_arg=''
 nh=0#первая сдача-comp
 e=False#видимость карт компьютера
 card_now_comp = []
@@ -28,6 +28,7 @@ cards_c=[]
 cards_h=[]
 w=''#конец партии
 
+jaz='en'
 txt_1='Bankroll    computer '
 txt_1a=' You'
 txt_2='Your Point Count '
@@ -40,6 +41,8 @@ txt_w22='Bust! You Win'
 txt_l22='Bust! You lost'
 txt_l21='Twenty One! You lost'
 txt_w21='Twenty One! You Win'
+save_txt='Save'
+name='anonim'
 
 def click_ru():
     global jaz, txt_1, txt_1a,txt_2,txt_b1,txt_b2,txt_w,txt_l,txt_n,txt_w22,txt_l22,txt_l21,txt_w21,bt3
@@ -56,25 +59,102 @@ def click_ru():
         txt_l22=(str(f.readline())).replace('\n',' ')
         txt_l21=(str(f.readline())).replace('\n',' ')
         txt_w21=(str(f.readline())).replace('\n',' ')
-    window.destroy()
+        save_txt=(str(f.readline())).replace('\n',' ')
+    return
+
+def c_arg(arg):
+    out_arg=''
+    for i in str(arg):
+        out_arg=out_arg+chr((ord(i))+2)
+    return str(out_arg)
+
+def u_arg(arg):
+    out_arg=''
+    for i in str(arg):
+        out_arg=out_arg+chr((ord(i))-2)
+    return str(out_arg)
+
+def per():
+    nl_txt='Bad login or password!'
+    print('Bad login or password!')
     return
 
 def click_log():
-    pass
+    print('log')
+    global jaz, s_comp, s_human,name, rp
+    name=entry1.get()
+    rp=entry2.get()
+    nl=''
+    with open('jok.png','r', encoding='UTF-8') as file:
+        f=file.read()
+        if c_arg(name) in f:
+            f_start=f.find(c_arg(name))
+            f_end=f.find('#',f_start)
+            f=(f[f_start:f_end])
+            nl=f.split(' ')
+            if name==u_arg(nl[0]) and rp==u_arg(nl[1]):
+                jaz, s_comp, s_human=u_arg(nl[4]),int(u_arg((nl[2]))),int(u_arg((nl[3])))
+            else:
+                per()
     window.destroy()
     return
 
 def click_sign():
-    pass
+    print('sign')
+    global name,rp,jaz,s_comp,s_human
+    name=entry1.get()
+    rp=entry2.get()
+    if entry3.get()=='russian' or entry3.get()=='ru':
+        jaz='ru'
+    else:
+        jaz='en'
+    with open('jok.png','r', encoding='UTF-8') as file:
+        f=file.read()
+        stf=(f.rfind('#'))+1
+        c_name,c_rp,c_s_comp,c_s_human,c_jaz=c_arg(name),c_arg(rp),c_arg(s_comp),c_arg(s_human),c_arg(jaz)
+        f_out=f[0:stf]+c_name+' '+c_rp+' '+c_s_comp+' '+c_s_human+' '+c_jaz+'#'+f[stf:]
+    with open('jok.png','w', encoding='UTF-8') as file:
+        file.write(f_out)
     window.destroy()
     return
 
+def click_save(event):
+    print('save')
+    global name,rp,s_comp,s_human,jaz
+    if name=='':
+        click_sign()
+    with open('jok.png','r', encoding='UTF-8') as file:
+        f=file.read()
+        lgn=c_arg(name)
+        if not lgn in f:
+            click_sign()
+        else:
+            stf=f.find(lgn)
+            atf=f.find('#',stf)
+            name,rp,s_comp,s_human,jaz=c_arg(name),c_arg(rp),c_arg(s_comp),c_arg(s_human),c_arg(jaz)
+            f_out=f[0:stf]+name+' '+rp+' '+str(s_comp)+' '+str(s_human)+' '+jaz+f[atf:]
+            with open('jok.png','w', encoding='UTF-8') as file:
+                file.write(f_out)
+        return
+
 window = Tk()
 window.title("21 Please Login")
-window.geometry("250x400")
+window.geometry("250x300")
+window.iconbitmap('i21.ico')
+window.configure(background="#22B14C")
 
-en_button = ttk.Button(window, text="Game without login", command=lambda: window.destroy())
-en_button.pack(anchor="n", expand=1)
+entry1 = ttk.Entry()
+entry1.focus()
+entry1.insert(0,'Name')
+entry1.pack(anchor=NW, padx=6, pady=6)
+
+entry2 = ttk.Entry()
+entry2.insert(0,'Password')
+entry2.pack(anchor=NW, padx=6, pady=6)
+
+entry3 = ttk.Entry()
+entry3.insert(0,'Language')
+entry3.pack(anchor=NW, padx=6, pady=6)
 
 log_button = ttk.Button(window, text="Log in", command=click_log)
 log_button.pack(anchor="n", expand=1)
@@ -82,12 +162,15 @@ log_button.pack(anchor="n", expand=1)
 sign_button = ttk.Button(window, text="Sign in", command=click_sign)
 sign_button.pack(anchor="n", expand=1)
 
+en_button = ttk.Button(window, text="Game without login", command=lambda: window.destroy())
+en_button.pack(anchor="n", expand=1)
+
 ru_button = ttk.Button(window, text="Игра на русском без логина", command=click_ru)
 ru_button.pack(anchor="n", expand=1)
 
 
 
-close_button = ttk.Button(window, text="Закрыть окно", command=lambda: window.destroy())
+close_button = ttk.Button(window, text="Close", command=lambda: window.destroy())
 close_button.pack(anchor="n", expand=1)
 
 window.mainloop()
@@ -188,7 +271,6 @@ def button_draw(event):
 def chek():
     global card_now_comp, card_now_hum, nh,h,sum_h,sum_c,card_value, s_comp, s_human, w, cards_c, cards_h, w,txt
     rrr()
-    #print('chek', sum_c, sum_h,'e=',e)
     if sum_c>21:
         nh=1
         w='w22'
@@ -302,6 +384,9 @@ def nh0():
         return
     return
 
+if jaz=='ru':
+    click_ru()
+
 tk = Tk()
 tk.iconbitmap('i21.ico')
 tk.title("21")
@@ -331,9 +416,13 @@ btn2 = Button(text = txt_b2, width=12, height=1, bg="grey", fg="yellow", font=('
 btn2.bind('<Button-1>', button_stand)
 btn2.place(x=250,y=620)
 
+save_button = Button(text = save_txt, width=12, height=1, bg="grey", fg="yellow", font=('Arial Black' ,'20'))
+save_button.bind('<Button-1>', click_save)
+save_button.place(x=550,y=620)
+
 label1 = ttk.Label()
-label1.configure(foreground=txt_color, background='#22B14C', width=30, anchor="center", font=("Arial", 18)) 
-label1.place(x=60,y=575)
+label1.configure(foreground=txt_color, background='#22B14C', width=50, anchor="w", font=("Arial", 18)) 
+label1.place(x=20,y=575)
 label1['text']=txt_1+str(s_comp)+':'+str(s_human)+txt_1a
 
 label2 = ttk.Label()
@@ -342,7 +431,7 @@ label2.place(x=515,y=575)
 label2['text']=txt_2+str(sum_h)
 
 ct = c.create_text(395, 260, text=txt, justify=CENTER, font="Arial 32", fill=txt_color)
-
+ct1 = c.create_text(750, 20, text='user: '+name, justify=CENTER, font="Arial 8", fill='white')
     
 tk.mainloop()
 
